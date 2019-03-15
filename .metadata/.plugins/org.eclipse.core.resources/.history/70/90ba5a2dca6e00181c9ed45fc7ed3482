@@ -1,0 +1,51 @@
+/*
+ * @authors: Zain Quraishi, Sundar Manku 
+ * @date: April 13th, 2018
+ * @filename: WSThread.java
+ * @description: Processes Web Server socket input, and parses input for http messages.
+ */
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+//import java.io.OutputStream;
+import com.google.gson.GsonBuilder;
+import java.util.ArrayList;
+
+import java.net.Socket;
+
+public class ServerThread extends Thread {
+	protected Socket socket;
+	
+    public ServerThread(Socket clientSocket) {
+        this.socket = clientSocket;
+    }
+    
+    //main thread runs on web server processing input
+    public void run() {
+    	System.out.println("Client Connected...");
+
+    	//Try/catch to retrieve socket input
+        try {
+        	
+        	//get socket input
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String message = "";
+            int i = 1;
+            
+            while ((message = in.readLine()) != null) {
+            	System.out.println("Creating Block with Message...\n" + message);
+        		Server.blockchain.add(new Block(message, Server.blockchain.get(Server.blockchain.size()-1).getHash())); 
+        		
+        		String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(Server.blockchain);		
+        		System.out.println("Block " + i + " Generated...\n" + blockchainJson);
+        		i++;
+            }
+            socket.close();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }    
+}
