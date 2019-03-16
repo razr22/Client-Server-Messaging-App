@@ -6,6 +6,6 @@
 
     TO COMPILE (SERVER):
       javac -cp jars/\* HelperClasses/*.java Server/*.java
-    
+    s
     TO RUN (SERVER):
       java -cp .:jars/\* Server/Server
