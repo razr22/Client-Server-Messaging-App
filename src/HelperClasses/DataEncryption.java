@@ -1,4 +1,10 @@
+/*
+ * @author: Zain Quraishi
+ * @date: 2019-03-21
+ * @filename: DataEncryption.java
+*/
 package HelperClasses;
+
 import java.security.MessageDigest;
 
 public class DataEncryption {

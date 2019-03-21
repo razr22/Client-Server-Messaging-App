@@ -2,7 +2,7 @@
  * @author: Zain Quraishi
  * @date: 2018-06-29
  * @filename: ChatMenuUI.java
- * @description: Main menu screen appears when a successfull connection has been made with the application server.
+ * @description: Main menu screen appears when a successful connection has been made with the application server.
 */
 
 package Client;
@@ -39,19 +39,18 @@ import HelperClasses.DataEncryption;
 import HelperClasses.TransferData;
 
 public class ChatMenuUI {
-	///protected static Socket chatsocket;
+
 	static String serverIP;
 	static int serverPort;
 	
-	public static boolean flag = false;
+	static boolean flag = false;
 	static JFrame frame = new JFrame("WutsGud");
+	
 	JButton convo = createNewConvo();
 	JButton existing = openExisting();
 	JButton exitApp = createQuit();
 
 	public ChatMenuUI(String sIP, int sPort) {
-		//chatsocket = clientSocket;
-		
 		serverIP = sIP;
 		serverPort = sPort;
 		
@@ -93,14 +92,13 @@ public class ChatMenuUI {
 					    	
 					    	File logFile = new File(convName.getText() + ".json");
 				    		if (!logFile.exists()){
-		
-			    			final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-		
-					    	String res = convName.getText() + username.getText();
-					    	
-					    	while (res.length() < 16) {res += "0";}
-					    	if (res.length() > 16) res = res.substring(0, 15);
-					    	String pkey = "";
+				    			final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+			
+						    	String res = convName.getText() + username.getText();
+						    	
+						    	while (res.length() < 16) {res += "0";}
+						    	if (res.length() > 16) res = res.substring(0, 15);
+						    	String pkey = "";
 					    		try {
 					    			pkey = DataEncryption.hashSHA256(res);
 		
@@ -118,7 +116,7 @@ public class ChatMenuUI {
 								} catch (Exception e2) {
 									e2.printStackTrace();
 								}
-					    		
+						    		
 						    	if (!(convName.getText() == null) && !convName.getText().isEmpty() && !logFile.exists()) {	    	
 							    	ArrayList<Block> newChain = new ArrayList<Block>();
 							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'", timeStampKey), pkey));
@@ -142,37 +140,35 @@ public class ChatMenuUI {
 			    }
 		    }
 		}
-		//make listener
+
 		ActionListener listener = new MyListener();
-		//add listener
 		newconvo.addActionListener(listener);
+		
 	    return newconvo;
 	}
 	
-	public static JButton openExisting() {
-		JButton existing = new JButton("Open Existing Conversation");
-		class MyListener implements ActionListener
-		{
-		    public void actionPerformed(ActionEvent e)
-		    {
-		    	JTextField convName = new JTextField(10);
-			    JTextField admin = new JTextField(10);
-			    JTextField user = new JTextField(10);
-			    JTextArea inKey = new JTextArea();
-			    JPanel myPanel = new JPanel();
-			    myPanel.setLayout(new GridLayout(4,1));
-			    myPanel.add(new JLabel("Conversation Name:"), BorderLayout.NORTH);
-			    myPanel.add(convName);
-			    myPanel.add(new JLabel("Your Username:"), BorderLayout.CENTER);
-			    myPanel.add(user);
-			    myPanel.add(new JLabel("Admin Username:"), BorderLayout.CENTER);
-			    myPanel.add(admin);
-			    myPanel.add(new JLabel("Access Key:"),BorderLayout.SOUTH);
-			    myPanel.add(inKey);
+public static JButton openExisting() {
+	JButton existing = new JButton("Open Existing Conversation");
+	class MyListener implements ActionListener {
+	    public void actionPerformed(ActionEvent e) {
+	    	JTextField convName = new JTextField(10);
+		    JTextField admin = new JTextField(10);
+		    JTextField user = new JTextField(10);
+		    JTextArea inKey = new JTextArea();
+		    JPanel myPanel = new JPanel();
+		    myPanel.setLayout(new GridLayout(4,1));
+		    myPanel.add(new JLabel("Conversation ID:"), BorderLayout.NORTH);
+		    myPanel.add(convName);
+		    myPanel.add(new JLabel("Your Username:"), BorderLayout.CENTER);
+		    myPanel.add(user);
+		    myPanel.add(new JLabel("Admin Username:"), BorderLayout.CENTER);
+		    myPanel.add(admin);
+		    myPanel.add(new JLabel("Access Key:"),BorderLayout.SOUTH);
+		    myPanel.add(inKey);
 
-			    int result = JOptionPane.showConfirmDialog(null, myPanel, "Open Existing Conversation", JOptionPane.OK_CANCEL_OPTION);
-		    	if (result == JOptionPane.OK_OPTION) {
-		    		String res = null;
+		    int result = JOptionPane.showConfirmDialog(null, myPanel, "Open Existing Conversation", JOptionPane.OK_CANCEL_OPTION);
+	    	if (result == JOptionPane.OK_OPTION) {
+	    		String res = null;
 		    	try {
 		    		res = convName.getText() + admin.getText();
 		    		while (res.length() < 16) {res += "0";}
@@ -180,60 +176,53 @@ public class ChatMenuUI {
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
-		    		try {
-						System.out.println(DataEncryption.hashSHA256(res));
-					} catch (Exception e2) {
-						e2.printStackTrace();
-					}
-					try {
-						// if entered key is result of info provided
-						if (inKey.getText().equals(DataEncryption.hashSHA256(res))) {
-						    File f = new File(convName.getText() + ".json");
-							if (f.exists()) {
-						       
-								BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
-						        Gson gson = new Gson();
-						        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
-						        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
-
-
-						        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
-						        	frame.dispose();
-						        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
-						        }
-						        else
-						    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
-							}
+	    		try {
+					System.out.println(DataEncryption.hashSHA256(res));
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				try {
+					// if entered key is result of info provided
+					if (inKey.getText().equals(DataEncryption.hashSHA256(res))) {
+					    File f = new File(convName.getText() + ".json");
+						if (f.exists()) {
+					       
+							BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
+					        Gson gson = new Gson();
+					        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
+					        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
+	
+	
+					        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
+					        	frame.dispose();
+					        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
+					        }
+					        else
+					    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
 						}
-					} catch (Exception e1) {
-						e1.printStackTrace();
 					}
-		    	}
-		    }
-		}
-		//make listener
-		ActionListener listener2 = new MyListener() ;
-		//add listener
-		existing.addActionListener(listener2);
-	    return existing;
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+	    	}
+	    }
 	}
+
+	ActionListener listener2 = new MyListener() ;
+	existing.addActionListener(listener2);
+	
+    return existing;
+}
 	public static JButton createQuit() {
 		JButton quit = new JButton("Quit");
 		class MyListener implements ActionListener {
 		    public void actionPerformed(ActionEvent e) {
-//		    	try {
-//					chatsocket.close();
-//				} catch (IOException e1) {
-//					System.out.println("Could not close chat menu socket...");
-//					e1.printStackTrace();
-//				}
 				frame.dispose();
 		    }
 		}
-		//make listener
 		ActionListener listener3 = new MyListener() ;
-		//add listener
 		quit.addActionListener(listener3);
+		
 	    return quit;
 	}
 }

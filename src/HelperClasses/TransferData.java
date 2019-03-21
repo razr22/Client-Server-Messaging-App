@@ -4,9 +4,7 @@
  * @filename: TransferData.java
  * @description: Helper class which provides data transfer protocols for data logs.
 */
-
 package HelperClasses;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;

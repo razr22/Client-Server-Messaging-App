@@ -1,4 +1,11 @@
+/*
+ * @author: Zain Quraishi
+ * @date: 2019-03-21
+ * @filename: DataEncryption.java
+*/
+
 package HelperClasses;
+
 public class Data {
 	private String uid;
 	private String message;
