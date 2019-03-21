@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename type &apos;CDN.helperClasses.DnsRecord&apos; to &apos;DNSRecord&apos;&#x0D;&#x0A;- Original project: &apos;CPS706-CDN&apos;&#x0D;&#x0A;- Original element: &apos;CDN.helperClasses.DnsRecord&apos;&#x0D;&#x0A;- Renamed element: &apos;CDN.helperClasses.DNSRecord&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename type &apos;DnsRecord&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.type" input="/src&lt;CDN.helperClasses{DnsRecord.java[DnsRecord" matchStrategy="1" name="DNSRecord" qualified="false" references="true" similarDeclarations="false" stamp="1523560775326" textual="false" version="1.0"/>
-</session>
