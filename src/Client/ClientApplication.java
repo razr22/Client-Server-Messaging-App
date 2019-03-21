@@ -9,7 +9,6 @@ package Client;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -17,23 +16,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import HelperClasses.TransferData;
+
 public class ClientApplication {
   
-	public static void connect(String ip, int port) {
-		@SuppressWarnings("unused")
-		Socket socket = null;
-		try {
-			socket = new Socket(ip, port);
-			System.out.println("Connected to Server at : " + ip + ":" + port + " ...");
-			new ChatMenuUI(socket).start();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void getConnectionInfo() {
+	public static void getConnectionInfo() throws IOException {
 		//JTextField ipField = new JTextField(10);
 	    String[] ipList = {"18.222.174.178", "localhost"};
 		JComboBox<?> ipField = new JComboBox<Object>(ipList);
@@ -54,10 +41,15 @@ public class ClientApplication {
 	    if (result == JOptionPane.OK_OPTION) {
 		    String ip = ipList[ipField.getSelectedIndex()];
 		    String port = portField.getText();
-		      	
+		    Socket servSock = TransferData.connect(ip, Integer.parseInt(port));
 			if (ip.matches("^localhost") || ip.matches("^[1-9]{1,3}.[1-9]{1,3}.[1-9]{1,3}.[1-9]{1,3}")) {
 				if (port.matches("^[0-9]{4}$")) {
-					connect(ip, Integer.parseInt(port));
+					if (servSock.isConnected()) {
+						System.out.println("Server is live at: " + ip + ":" + port);
+						servSock.close();
+						new ChatMenuUI(ip, Integer.parseInt(port));
+					}
+					
 				}
 				else
 		    		JOptionPane.showMessageDialog(null, "Invalid Port Number!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
@@ -68,7 +60,7 @@ public class ClientApplication {
 	    else System.exit(0);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		getConnectionInfo();		
 	}
 }

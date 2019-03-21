@@ -16,12 +16,11 @@ import HelperClasses.TransferData;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-@SuppressWarnings("serial")
+
 public class ChatWindowUI extends Thread {
 JPanel panel;
 JPanel panel1;
@@ -31,22 +30,24 @@ JFrame frame;
 JButton exit;
 boolean typing;
 private String timeStamp;
-protected static String convName;
-private static ArrayList<Block> convLog;
+private String convName;
+private ArrayList<Block> convLog;
 private String uid;
-protected static Socket windowsocket; 
+private String serverIP; 
+private int serverPort;
+
+//protected static Socket windowsocket; 
 protected int first = 0;
 
-    public ChatWindowUI(Socket socket, String UID, String convName, ArrayList<Block> convLog){
-    	ChatWindowUI.windowsocket = socket;
-        this.uid = UID;	
-    	ChatWindowUI.convName = convName;
-        ChatWindowUI.convLog = convLog;
-        generateChat(ChatWindowUI.convName, ChatWindowUI.convLog);
+    public ChatWindowUI(String sIP, int sPort, String UID, String convName, ArrayList<Block> convLog){
+    	serverIP = sIP;
+    	serverPort = sPort;
+        uid = UID;	
+    	this.convName = convName;
+        this.convLog = convLog;
+        generateChat(this.convName, this.convLog);
     }
-   
-    //retrieve message history before creating chat
-    
+       
     private void generateChat(String convName, ArrayList<Block> convLog){
     	 frame = new JFrame(uid);
     	 textField = new JTextArea();
@@ -81,11 +82,11 @@ protected int first = 0;
 	     exit = new JButton("Exit");
 		 exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					windowsocket.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+//				try {
+//					windowsocket.close();
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
 				frame.dispose();
 			}
 		 });
@@ -149,8 +150,7 @@ protected int first = 0;
         convLog.add(new Block(new Data(uid,text,timeStamp), convLog.get(convLog.size()-1).getCurrentHash()));
         
         TransferData.writeToFile(convLog, convName);
-        
-        Socket temp = windowsocket;
-        first = TransferData.sendFile(convName, convLog, first, temp);
+
+        first = TransferData.sendFile(convName, convLog, first, serverIP, serverPort);
     }
 }

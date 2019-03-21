@@ -25,7 +25,6 @@ public class Block {
 	}
 	
 	public String getCurrentHash() {
-		String hash = DataEncryption.hashSHA256(previousHash + data + timeStamp);
-		return hash;
+		return DataEncryption.hashSHA256(previousHash + data + timeStamp);
 	}
 }

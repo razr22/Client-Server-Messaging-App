@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,7 +32,8 @@ public class TransferData {
 		TransferData.tsocket = socket;
 	}
 		
-	public static int sendFile(String convName, ArrayList<Block> convLog, int first, Socket temp) throws IOException {
+	public static int sendFile(String convName, ArrayList<Block> convLog, int first, String ip, int port) throws IOException {
+		Socket temp = new Socket(ip, port);
 		DataOutputStream dos = new DataOutputStream(temp.getOutputStream());
 		String name = convName + ".json";
 		File local = new File(name);
@@ -63,7 +65,8 @@ public class TransferData {
 		
 		dos.write("e\n".getBytes());
 		dos.flush();
-		//dos.close(); //
+		dos.close();
+		temp.close();
 		return first;        
     }
 	
@@ -77,7 +80,6 @@ public class TransferData {
 		else System.out.println("server unable to read data...");
 		
 		String fname =  br.readLine();
-		//String fname = front + ".json";
 		System.out.println("receiving : " + fname);
 		
 		File sLog = new File(fname);
@@ -102,58 +104,23 @@ public class TransferData {
 		str = null;
 		ArrayList<String> read = new ArrayList<String>();
 		while (!(str = br.readLine()).equals("e")) {	
-			///System.out.println("LINE : " + str);
 			if (str.equals("]")) tmp = str;
 			else tmp = str + "\n";
 			
 			read.add(tmp);
 		}
-	//	br.close(); //
 		if (flag) { 
 			System.out.println("Checking file contents...");
-			//compareData(read, newPath.toString());
 		}
 
 		int i = 0;
 		FileOutputStream fos = new FileOutputStream(newPath.toString(), true);
 		while (i < read.size()) {
-			//System.out.print("WRITE TO FILE : " + read.get(i));
 			fos.write(read.get(i).getBytes());
 			fos.flush();
 			i++;			
 		}
 		fos.close();
-	}
-	
-	//may have to check if file contents are identical
-	public static void compareData(ArrayList<String> read, String filePath) throws IOException {
-		BufferedReader readLog = new BufferedReader(new FileReader(new File(filePath)));
-
-		//store contents in array for comparison
-		String logData = null;
-		ArrayList<String> serverLog = new ArrayList<String>();
-		while ((logData = readLog.readLine()) != null) {
-			serverLog.add(logData);
-		}
-		
-		//if server log is larger than client log than client log needs to be updated
-		//else if the client log is larger than the server log than the server log needs to be updated and needs to be pushed to the client.
-		//create and return updated array list with correct chronologically correct contents.
-		
-		int clientIndex = 0;
-
-			String client = read.get(clientIndex);
-			if (!(logData.equals(client))) System.out.println("LINE " + clientIndex + "Mismatch\n--- CLIENT ---\n" + client + "\n\n--- SERVER ---\n" + logData);
-			clientIndex++;
-		
-		readLog.close();
-		
-		//
-		//if client log larger than current server log
-		//boolean larger = (read.size() > logSize) && (read.size() != logSize) ? true : false ;
-		//if client log smaller than current server log, (not possible?)
-		
-		//if (larger) {}
 	}
 
 	public static void writeToFile(ArrayList<Block> convLog, String convName) {
@@ -162,13 +129,25 @@ public class TransferData {
 			File f = new File(convName + ".json");
 			
 			if (f.exists()) {
-				@SuppressWarnings("resource")
 				FileOutputStream outData = new FileOutputStream(f, false); 
 				
 				outData.write(convJson.getBytes());
 				outData.flush();
+				outData.close();
 			}
 		}
 		catch(Exception e) {e.printStackTrace();}
 	}
+	
+	public static Socket connect(String ip, int port) {
+		Socket socket = null;
+		try {
+			socket = new Socket(ip, port);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return socket;
+	}		
 }
