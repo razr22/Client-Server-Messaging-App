@@ -22,7 +22,7 @@ public class ClientApplication {
   
 	public static void getConnectionInfo() throws IOException {
 		//JTextField ipField = new JTextField(10);
-	    String[] ipList = {"18.222.174.178", "localhost"};
+	    String[] ipList = {"localhost", "18.222.174.178"};
 		JComboBox<?> ipField = new JComboBox<Object>(ipList);
 		JTextField portField = new JTextField(5);
 	    

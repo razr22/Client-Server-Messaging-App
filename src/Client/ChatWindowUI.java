@@ -132,7 +132,6 @@ protected int first = 0;
         //FRAME INFO
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
-        //pack();
         frame.setSize(350,400);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
