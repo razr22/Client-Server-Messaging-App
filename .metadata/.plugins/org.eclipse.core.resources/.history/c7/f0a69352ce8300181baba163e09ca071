@@ -1,0 +1,165 @@
+/*
+ * @authors: Zain Quraishi
+ * @date: 2018-06-29
+ * @filename: TransferData.java
+ * @description: Helper class which provides data transfer protocols for data logs.
+*/
+
+package HelperClasses;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import com.google.gson.GsonBuilder;
+
+public class TransferData {
+	protected static Socket tsocket;
+	public static int flag = 0;
+	
+	public TransferData(Socket socket) {
+		TransferData.tsocket = socket;
+	}
+		
+	public static int sendFile(String convName, ArrayList<Block> convLog, int first, Socket temp) throws IOException {
+		DataOutputStream dos = new DataOutputStream(temp.getOutputStream());
+		String name = convName + ".json";
+		File local = new File(name);
+		
+		if (first == 0) {
+			dos.writeInt(1);
+			dos.flush();
+			
+			String test = convName + "\n";
+			dos.write(test.getBytes());
+			dos.flush();
+			
+			first = 1;
+		}
+		if (local.exists()) {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(local));
+			String str = null;
+			String fmt = null;
+			System.out.println("Transmitting file... " + local.getName());
+			while ((str = bufferedReader.readLine()) != null) {
+				fmt = str + "\n";
+				//System.out.print(fmt);
+				dos.write(fmt.getBytes());
+				dos.flush();
+			}
+			bufferedReader.close();
+			first = 0;
+		}
+		
+		dos.write("e\n".getBytes());
+		dos.flush();
+		return first;        
+    }
+	
+	public static int receiveFile(Socket socket, int s) throws IOException {
+		System.out.println("Iter: " + s);
+		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		
+		if (br.ready()) {System.out.println("ready to receive data...");}
+		else System.out.println("server unable to read data...");
+		
+		String front =  br.readLine();
+		String fname = front + ".json";
+		System.out.println("receiving : " + fname);
+		
+		File sLog = new File(fname);
+		Path newPath = Paths.get("logs/" + sLog);
+
+		try {
+			Files.createDirectories(newPath.getParent());
+			Files.createFile(newPath);
+			System.out.println("Creating file...");
+			
+		}
+		catch(FileAlreadyExistsException e) {
+			System.out.println("file exists...");
+			
+			PrintWriter pw = new PrintWriter(newPath.toString());
+			pw.close();
+		}	
+		
+		String str = null;
+		String tmp = null;
+		
+		str = null;
+		ArrayList<String> read = new ArrayList<String>();
+		while (!(str = br.readLine()).equals("e")) {
+			tmp = str + "\n";
+			read.add(tmp);
+		}
+
+		System.out.println("cfile");
+
+		int i = s;
+		FileOutputStream fos = new FileOutputStream(newPath.toString(), true);
+		while (i < read.size()) {
+
+			fos.write(read.get(i).getBytes());
+			fos.flush();
+			i++;			
+		}
+		fos.close();
+		
+		BufferedReader filer = new BufferedReader(new FileReader(newPath.toString()));
+		System.out.println("Current Server Log Contents...");
+		while (!(str = filer.readLine()).equals("]")) {
+			//System.out.println(str);
+			s+=2;
+		}
+		filer.close();
+		return s;
+	}
+	
+	public static void writeLog(ArrayList<String> clientLog, File f) {
+		//String convJson = new GsonBuilder().setPrettyPrinting().create().toJson(clientLog);
+		Path newLog = Paths.get("logs/" + f);
+		try {						
+				System.out.println("processing...");
+				@SuppressWarnings("resource")
+				FileOutputStream newOut = new FileOutputStream(newLog.toString(), false); 
+
+				newOut.write(clientLog.get(clientLog.size()-1).toString().getBytes());
+				newOut.flush();
+				newOut.close();
+		}
+		catch(Exception e) {e.printStackTrace();}
+	}
+	public static void retrieveFromServer(String convName, Socket socket) throws IOException {
+		new TransferData(socket);
+		DataOutputStream dos = new DataOutputStream(tsocket.getOutputStream());
+		dos.writeInt(2);
+		dos.writeUTF(convName);
+	}
+	
+	public static void writeToFile(ArrayList<Block> convLog, String convName) {
+		String convJson = new GsonBuilder().setPrettyPrinting().create().toJson(convLog);
+		try {						
+			File f = new File(convName + ".json");
+			
+			if (f.exists()) {
+				@SuppressWarnings("resource")
+				FileOutputStream outData = new FileOutputStream(f, false); 
+				
+				outData.write(convJson.getBytes());
+				outData.flush();
+//				outData.close();
+			}
+		}
+		catch(Exception e) {e.printStackTrace();}
+	}
+}
