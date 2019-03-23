@@ -12,8 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
-	protected static ServerSocket serversocket;
-	protected static Socket socket = null;
+	private static ServerSocket serversocket;
+	private static Socket socket = null;
 	
 	public Server(ServerSocket socket) throws IOException {
 		Server.serversocket = socket;

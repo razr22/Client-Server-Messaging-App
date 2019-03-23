@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import HelperClasses.Block;
 import HelperClasses.Data;
+import HelperClasses.DataEncryption;
 import HelperClasses.TransferData;
 
 import java.awt.*;
@@ -22,22 +23,21 @@ import java.util.Date;
 
 
 public class ChatWindowUI extends Thread {
-JPanel panel;
-JPanel panel1;
-JTextArea textField;
-JTextArea textArea;
-JFrame frame;
-JButton exit;
+private JPanel panel;
+private JTextArea textField;
+private JTextArea textArea;
+private JFrame frame;
+private JButton exit;
 boolean typing;
-private String timeStamp;
+
 private String convName;
 private ArrayList<Block> convLog;
 private String uid;
+
 private String serverIP; 
 private int serverPort;
 
-//protected static Socket windowsocket; 
-protected int first = 0;
+private int first = 0;
 
     public ChatWindowUI(String sIP, int sPort, String UID, String convName, ArrayList<Block> convLog){
     	serverIP = sIP;
@@ -65,7 +65,7 @@ protected int first = 0;
 		     public void keyPressed(KeyEvent key){
 		     	if(key.getKeyCode()==KeyEvent.VK_ENTER && !textField.getText().equals("Enter Message...") && !textField.getText().isEmpty()) {
 		 		try {
-					logMessage(textField.getText());
+					logMessage(textField.getText(), convLog);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -82,11 +82,6 @@ protected int first = 0;
 	     exit = new JButton("Exit");
 		 exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				try {
-//					windowsocket.close();
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
 				frame.dispose();
 			}
 		 });
@@ -110,7 +105,7 @@ protected int first = 0;
         textArea=new JTextArea();
         textArea.setBackground(Color.LIGHT_GRAY);
         textArea.setForeground(Color.BLUE);
-        //textArea.setPreferredSize(new Dimension(350,400));
+
         textArea.setEditable(false);
        
         // Set some margin, for the text
@@ -138,18 +133,20 @@ protected int first = 0;
     }
     
     //USER HITS ENTER
-    private void logMessage(String text) throws IOException{
+    public ArrayList<Block> logMessage(String text, ArrayList<Block> log) throws IOException{
         // If text is empty return
-        if(text.trim().isEmpty()) return;
+        if(text.trim().isEmpty()) return null;
 
-        timeStamp = new SimpleDateFormat("hh:mm:ss a").format(new Date());
-        String out = uid +  " [" + timeStamp + "]: " + text;
-        textArea.append(out + "\n");
+        String timeStamp = new SimpleDateFormat("hh:mm:ss a").format(new Date());
+        String out = uid +  " [" + timeStamp + "]: " + text + "\n";
+        textArea.append(out);
         
-        convLog.add(new Block(new Data(uid,text,timeStamp), convLog.get(convLog.size()-1).getCurrentHash()));
+        log.add(new Block(new Data(uid,text,timeStamp), log.get(convLog.size()-1).getCurrentHash(), DataEncryption.hashSHA256(log.get(convLog.size()-1).getPreviousHash() + log.get(convLog.size()-1).data + log.get(convLog.size()-1).getTimeStamp())));
         
-        TransferData.writeToFile(convLog, convName);
+        TransferData.writeToFile(log, convName);
 
-        first = TransferData.sendFile(convName, convLog, first, serverIP, serverPort);
+        first = TransferData.sendFile(convName, log, first, serverIP, serverPort);
+        
+        return log;
     }
 }

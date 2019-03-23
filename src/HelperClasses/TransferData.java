@@ -23,12 +23,7 @@ import java.util.ArrayList;
 import com.google.gson.GsonBuilder;
 
 public class TransferData {
-	protected static Socket tsocket;
-	public static boolean flag = false;
-	
-	public TransferData(Socket socket) {
-		TransferData.tsocket = socket;
-	}
+	private static boolean flag = false;
 		
 	public static int sendFile(String convName, ArrayList<Block> convLog, int first, String ip, int port) throws IOException {
 		Socket temp = new Socket(ip, port);
@@ -81,7 +76,7 @@ public class TransferData {
 		System.out.println("receiving : " + fname);
 		
 		File sLog = new File(fname);
-		Path newPath = Paths.get("logs/" + sLog);
+		Path newPath = Paths.get("Reference/" + sLog);
 
 		try {
 			Files.createDirectories(newPath.getParent());

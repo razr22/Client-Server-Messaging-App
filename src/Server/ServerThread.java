@@ -14,8 +14,8 @@ import java.net.Socket;
 import HelperClasses.TransferData;
 
 public class ServerThread extends Thread {
-	protected static Socket serversocket;
-	//protected DataInputStream dis;
+	private static Socket serversocket;
+
 	public ServerThread(Socket socket) {
 		ServerThread.serversocket = socket;
 	}

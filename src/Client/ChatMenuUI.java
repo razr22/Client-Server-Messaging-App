@@ -40,15 +40,14 @@ import HelperClasses.TransferData;
 
 public class ChatMenuUI {
 
-	static String serverIP;
-	static int serverPort;
+	private static String serverIP;
+	private static int serverPort;
 	
-	static boolean flag = false;
-	static JFrame frame = new JFrame("WutsGud");
+	private static JFrame frame = new JFrame("WutsGud");
 	
-	JButton convo = createNewConvo();
-	JButton existing = openExisting();
-	JButton exitApp = createQuit();
+	private JButton convo = createNewConvo();
+	private JButton existing = openExisting();
+	private JButton exitApp = createQuit();
 
 	public ChatMenuUI(String sIP, int sPort) {
 		serverIP = sIP;
@@ -119,7 +118,7 @@ public class ChatMenuUI {
 						    		
 						    	if (!(convName.getText() == null) && !convName.getText().isEmpty() && !logFile.exists()) {	    	
 							    	ArrayList<Block> newChain = new ArrayList<Block>();
-							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'", timeStampKey), pkey));
+							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'", timeStampKey), null, pkey));
 				
 								    try {
 										logFile.createNewFile();
@@ -168,25 +167,14 @@ public static JButton openExisting() {
 
 		    int result = JOptionPane.showConfirmDialog(null, myPanel, "Open Existing Conversation", JOptionPane.OK_CANCEL_OPTION);
 	    	if (result == JOptionPane.OK_OPTION) {
-	    		String res = null;
-		    	try {
-		    		res = convName.getText() + admin.getText();
-		    		while (res.length() < 16) {res += "0";}
-		    		if (res.length() > 16) res = res.substring(0, 15);
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
-	    		try {
-					System.out.println(DataEncryption.hashSHA256(res));
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
+
+	    		String res = Block.processHash(user.getText(), convName.getText());
+	    		
 				try {
 					// if entered key is result of info provided
-					if (inKey.getText().equals(DataEncryption.hashSHA256(res))) {
+					if (inKey.getText().equals(res)) {
 					    File f = new File(convName.getText() + ".json");
 						if (f.exists()) {
-					       
 							BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
 					        Gson gson = new Gson();
 					        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
@@ -194,8 +182,10 @@ public static JButton openExisting() {
 	
 	
 					        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
-					        	frame.dispose();
+					        	final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+					        	convHistory.add(new Block(new Data(user.getText(), user.getText() + " has joined the conversation ...", timeStampKey), convHistory.get(convHistory.size()-1).getCurrentHash(), Block.processHash(user.getText(), convName.getText())));
 					        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
+					        	frame.dispose();
 					        }
 					        else
 					    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
