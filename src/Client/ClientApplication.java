@@ -48,7 +48,6 @@ public class ClientApplication {
 						servSock.close();
 						new ChatMenuUI(ip, Integer.parseInt(port));
 					}
-					
 				}
 				else
 		    		JOptionPane.showMessageDialog(null, "Invalid Port Number!", "ERROR", JOptionPane.INFORMATION_MESSAGE);

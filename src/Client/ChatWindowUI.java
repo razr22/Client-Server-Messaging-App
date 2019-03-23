@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ChatWindowUI extends Thread {
@@ -97,7 +99,6 @@ private int first = 0;
         textField.setText("Enter Message...");
         panel.add(textField);
       
-       // button.setMaximumSize(new Dimension(40,20));
         panel.add(exit, BorderLayout.SOUTH);
         frame.add(panel,BorderLayout.SOUTH);
          
@@ -112,12 +113,17 @@ private int first = 0;
         textArea.setMargin(new Insets(7,7,7,7));
         
         //POPULATE MESSAGES IN WINDOW
-        //readHistory(textArea, convLog);
         if (convLog.size() > 1) {
+        	String pattern = "([0-9]){2}:([0-9]){2}:([0-9]){2} [A|P]{1}[M]{1}$";
+        	Pattern pat = Pattern.compile(pattern);
+
         	textArea.append(convLog.get(0).data.getMessage() + "\n");
 	        for (int i = 1; i < convLog.size(); i++) {
-	        	String out = convLog.get(i).data.getUserID() +  " [" + convLog.get(i).data.getTimeStamp() + "]: " + convLog.get(i).data.getMessage();
-	        	textArea.append(out + "\n");
+	        	Matcher match = pat.matcher(convLog.get(i).getTimeStamp());
+	        	if (match.find()) {
+	        		String out = convLog.get(i).data.getUserID() +  " [" + match.group() + "]: " + convLog.get(i).data.getMessage();
+	        		textArea.append(out + "\n");
+	        	}
 	        }
         }
         else textArea.append(convLog.get(0).data.getMessage() + "\n");
@@ -141,7 +147,7 @@ private int first = 0;
         String out = uid +  " [" + timeStamp + "]: " + text + "\n";
         textArea.append(out);
         
-        log.add(new Block(new Data(uid,text,timeStamp), log.get(convLog.size()-1).getCurrentHash(), DataEncryption.hashSHA256(log.get(convLog.size()-1).getPreviousHash() + log.get(convLog.size()-1).data + log.get(convLog.size()-1).getTimeStamp())));
+        log.add(new Block(new Data(uid,text), log.get(convLog.size()-1).getCurrentHash(), DataEncryption.hashSHA256(log.get(convLog.size()-1).getPreviousHash() + log.get(convLog.size()-1).data + log.get(convLog.size()-1).getTimeStamp())));
         
         TransferData.writeToFile(log, convName);
 

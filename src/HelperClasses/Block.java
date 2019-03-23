@@ -17,7 +17,7 @@ public class Block {
 	public Data data;
 	
 	public Block(Data data, String previousHash, String currentHash) {
-		this.timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+		this.timeStamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a").format(new Date());
 		this.previousHash = previousHash;
 		this.currentHash = currentHash;
 		this.data = data;

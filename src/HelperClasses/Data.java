@@ -9,12 +9,10 @@ package HelperClasses;
 public class Data {
 	private String uid;
 	private String message;
-	private String timeStamp;
 	
-	public Data(String uid, String message, String timeStamp) {
+	public Data(String uid, String message) {
 		this.uid = uid;
 		this.message = message;
-		this.timeStamp = timeStamp;
 	}
 	
 	public String getUserID() {
@@ -23,9 +21,5 @@ public class Data {
 	
 	public String getMessage() {
 		return message;
-	}
-	
-	public String getTimeStamp() {
-		return timeStamp;
 	}
 }

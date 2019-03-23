@@ -16,9 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -91,7 +89,7 @@ public class ChatMenuUI {
 					    	
 					    	File logFile = new File(convName.getText() + ".json");
 				    		if (!logFile.exists()){
-				    			final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+//				    			final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 			
 						    	String res = convName.getText() + username.getText();
 						    	
@@ -104,9 +102,12 @@ public class ChatMenuUI {
 									JPanel myPanel2 = new JPanel();
 									myPanel2.setLayout(new GridLayout(2,1));
 									
-									JLabel alert = new JLabel("THIS IS THE UNIQUE KEY FOR YOUR CONVERSATION! DO NOT LOSE THIS KEY!");
+									JLabel alert = new JLabel("THIS IS THE UNIQUE KEY FOR YOUR CONVERSATION! STORE THIS KEY IN A SECURE LOCATION!");
 									JTextArea key = new JTextArea(pkey);
 									key.setEditable(false);
+									key.requestFocus();
+									key.selectAll();
+									
 									
 									myPanel2.add(alert, BorderLayout.NORTH);
 									myPanel2.add(key, BorderLayout.SOUTH);
@@ -118,7 +119,7 @@ public class ChatMenuUI {
 						    		
 						    	if (!(convName.getText() == null) && !convName.getText().isEmpty() && !logFile.exists()) {	    	
 							    	ArrayList<Block> newChain = new ArrayList<Block>();
-							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'", timeStampKey), null, pkey));
+							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'"), "0", pkey));
 				
 								    try {
 										logFile.createNewFile();
@@ -147,6 +148,7 @@ public class ChatMenuUI {
 	}
 	
 public static JButton openExisting() {
+	frame.setVisible(false);
 	JButton existing = new JButton("Open Existing Conversation");
 	class MyListener implements ActionListener {
 	    public void actionPerformed(ActionEvent e) {
@@ -168,7 +170,7 @@ public static JButton openExisting() {
 		    int result = JOptionPane.showConfirmDialog(null, myPanel, "Open Existing Conversation", JOptionPane.OK_CANCEL_OPTION);
 	    	if (result == JOptionPane.OK_OPTION) {
 
-	    		String res = Block.processHash(user.getText(), convName.getText());
+	    		String res = Block.processHash(admin.getText(), convName.getText());
 	    		
 				try {
 					// if entered key is result of info provided
@@ -182,8 +184,8 @@ public static JButton openExisting() {
 	
 	
 					        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
-					        	final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					        	convHistory.add(new Block(new Data(user.getText(), user.getText() + " has joined the conversation ...", timeStampKey), convHistory.get(convHistory.size()-1).getCurrentHash(), Block.processHash(user.getText(), convName.getText())));
+					        	//final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+					        	//convHistory.add(new Block(new Data(user.getText(), user.getText() + " has joined the conversation ..."), convHistory.get(convHistory.size()-1).getCurrentHash(), Block.processHash(user.getText(), convName.getText())));
 					        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
 					        	frame.dispose();
 					        }
@@ -191,6 +193,7 @@ public static JButton openExisting() {
 					    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
 						}
 					}
+					else JOptionPane.showMessageDialog(null, "Access Key Invalid...", "ERROR!", JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
