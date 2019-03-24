@@ -21,7 +21,7 @@ import HelperClasses.TransferData;
 public class ClientApplication {
   
 	private static void getConnectionInfo() throws IOException {
-	    String[] ipList = {"localhost", "18.222.174.178"};
+	    String[] ipList = {"localhost", "18.218.170.76"};
 		JComboBox<?> ipField = new JComboBox<Object>(ipList);
 		JTextField portField = new JTextField(5);
 	    
