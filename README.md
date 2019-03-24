@@ -2,7 +2,9 @@
 
 ##### With knowledge gained from socket programming in Java, this program extends server functionality to allow for communication between two or more parties through a host server node which registers and logs each users message onto a blockchain for that conversation. This log is then distributed to all parties involved and the third party server. Concepts such as message encryption and hashing, reading/writing files, etc. are implemented.
 
-###### Currently Debugging an issue with multiple user sessions.
+##### --- To-Do ---
+###### Debugging an issue with multiple user sessions.
+###### Debugging consensus mechanism and log tampering. 
     TO COMPILE (SERVER):
       javac -cp jars/\* HelperClasses/*.java Server/*.java
   
