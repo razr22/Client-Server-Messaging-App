@@ -21,8 +21,7 @@ public class ServerThread extends Thread {
 	}
 		
 	public void run() {
-		System.out.println("Client at : " + serversocket.getRemoteSocketAddress().toString() + " connected...\n");
-    	System.out.println("Waiting for incoming data...");
+		System.out.println("Client at : " + serversocket.getRemoteSocketAddress().toString() + " connected...");
     	
     	DataInputStream dis = null;
     	
@@ -35,9 +34,14 @@ public class ServerThread extends Thread {
     	while (true) {
 	    	try {
 	    		if (dis.available() > 0) {
-	    			//On user input receive incoming log file
-	    			if (dis.readInt() == 1) {
+	    			int value = dis.readInt();
+	    			//On file reception, store incoming log file
+	    			if (value == 1) {
 	    				TransferData.receiveFile(serversocket);
+	    			}
+	    			//on log request
+	    			else if (value == 2) {
+	    				TransferData.parseLogs(serversocket);
 	    			}
 	    		}
 			} catch (IOException e) {

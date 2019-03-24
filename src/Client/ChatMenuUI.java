@@ -14,8 +14,11 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import javax.swing.Box;
@@ -86,11 +89,17 @@ public class ChatMenuUI {
 			    if (result == JOptionPane.OK_OPTION) {
 			    	if (!(convName.getText() == null) && !convName.getText().isEmpty()){
 			    		if (!(username.getText() == null) && !username.getText().isEmpty()){
-					    	
+ 	
 					    	File logFile = new File(convName.getText() + ".json");
-				    		if (!logFile.exists()){
-//				    			final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-			
+							Path newPath = Paths.get("local/" + logFile);
+
+				    		if (!Files.exists(newPath)){
+//				    			try {
+//									Files.createDirectories(newPath.getParent());
+//									Files.createFile(newPath);
+//								}
+//								catch(FileAlreadyExistsException e4) {} catch (IOException e1) {}
+				    			
 						    	String res = convName.getText() + username.getText();
 						    	
 						    	while (res.length() < 16) {res += "0";}
@@ -121,12 +130,8 @@ public class ChatMenuUI {
 							    	ArrayList<Block> newChain = new ArrayList<Block>();
 							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'"), "0", pkey));
 				
-								    try {
-										logFile.createNewFile();
-										TransferData.writeToFile(newChain, convName.getText());
-									} catch (IOException e1) {
-										e1.printStackTrace();
-									} 
+								    //logFile.createNewFile();
+									TransferData.writeToFile(newChain, convName.getText()); 
 								   
 									new ChatWindowUI(serverIP, serverPort, username.getText(), convName.getText(), newChain);
 									frame.dispose();
@@ -149,7 +154,7 @@ public class ChatMenuUI {
 	
 public static JButton openExisting() {
 	frame.setVisible(false);
-	JButton existing = new JButton("Open Existing Conversation");
+	JButton existing = new JButton("Join Existing Conversation");
 	class MyListener implements ActionListener {
 	    public void actionPerformed(ActionEvent e) {
 	    	JTextField convName = new JTextField(10);
@@ -175,22 +180,37 @@ public static JButton openExisting() {
 				try {
 					// if entered key is result of info provided
 					if (inKey.getText().equals(res)) {
+						//check if log exists locally 
 					    File f = new File(convName.getText() + ".json");
-						if (f.exists()) {
-							BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
+						Path newPath = Paths.get("local/" + f);
+
+						try {
+							Files.createDirectories(newPath.getParent());
+							Files.createFile(newPath);
+						}
+						catch(FileAlreadyExistsException e4) {}	
+						
+						if (Files.exists(newPath)) {
+							BufferedReader bufferedReader = new BufferedReader(new FileReader(newPath.toString()));
+							System.out.println(newPath.toString());
 					        Gson gson = new Gson();
 					        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 					        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
 	
 	
 					        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
-					        	//final String timeStampKey = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					        	//convHistory.add(new Block(new Data(user.getText(), user.getText() + " has joined the conversation ..."), convHistory.get(convHistory.size()-1).getCurrentHash(), Block.processHash(user.getText(), convName.getText())));
 					        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
 					        	frame.dispose();
 					        }
 					        else
 					    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
+						}
+						//request server to check for log file
+						else {
+							System.out.println("log dne locally, checking server...");
+							int req = TransferData.serverRequest(2, convName.getText(), serverIP, serverPort);
+							if (req != 1)
+								JOptionPane.showMessageDialog(null, "Conversation does not exist!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
 						}
 					}
 					else JOptionPane.showMessageDialog(null, "Access Key Invalid...", "ERROR!", JOptionPane.INFORMATION_MESSAGE);
