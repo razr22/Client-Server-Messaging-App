@@ -33,39 +33,6 @@ import com.google.gson.reflect.TypeToken;
 public class TransferData {
 	private static boolean flag = false;
 	
-	public static int checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
-		System.out.println("Checking for updated log...");
-		
-		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
-		
-		while (dis.available() == 0) {}
-		
-		String fileName = dis.readUTF();
-		String clientTStamp = dis.readUTF();
-
-		File sLog = new File("server/" + fileName + ".json");
-
-		if (sLog.exists()) {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(sLog));
-	        Gson gson = new Gson();
-	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
-	        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
-	        String serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
-	        
-	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
-	        
-	        Date serverDate = sdf.parse(serverTStamp);
-	        Date clientDate = sdf.parse(clientTStamp);
-	        
-	        //if server log is update 
-	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 2);}	//send server log to client
-	        else {System.out.println("Client log up-to-date...");}	//retrieve client log 
-		}
-		
-		dis.close();
-		reqSocket.close();
-		return 0;
-	}
 	
 	public static int serverRequest(int reqID, String cname, String tStamp, String ip, int port) throws UnknownHostException, IOException {
 		Socket reqSocket = new Socket(ip, port);
@@ -95,6 +62,40 @@ public class TransferData {
 		dos.close();
 		reqSocket.close();
 		return res;
+	}
+	
+	public static int checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
+		System.out.println("Checking for updated log...");
+		
+		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
+		
+		while (dis.available() == 0) {}
+		
+		String fileName = dis.readUTF();
+		String clientTStamp = dis.readUTF();
+
+		File sLog = new File("server/" + fileName + ".json");
+
+		if (sLog.exists()) {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(sLog));
+	        Gson gson = new Gson();
+	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
+	        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
+	        String serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
+	        
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+	        
+	        Date serverDate = sdf.parse(serverTStamp);
+	        Date clientDate = sdf.parse(clientTStamp);
+	        
+	        //if server log is update 
+	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 1);}	//send server log to client
+	        else {System.out.println("Client log up-to-date...");}	//retrieve client log 
+		}
+		
+		dis.close();
+		reqSocket.close();
+		return 0;
 	}
 	
 	public static void retrieveServerLog(Socket reqSocket) throws IOException {
