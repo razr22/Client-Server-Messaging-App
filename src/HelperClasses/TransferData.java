@@ -162,7 +162,7 @@ public class TransferData {
 		}
 
 		int i = 0;
-		FileOutputStream fos = new FileOutputStream(newPath.toString(), true);
+		FileOutputStream fos = new FileOutputStream(newPath.toString(), false);
 		while (i < read.size()) {
 			fos.write(read.get(i).getBytes());
 			fos.flush();
