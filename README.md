@@ -5,6 +5,7 @@
 ##### --- To-Do ---
 ###### Debugging an issue with multiple user sessions.
 ###### Debugging consensus mechanism and log tampering. 
+###### Move away from single server verification and distribution to P2P.
     TO COMPILE (SERVER):
       javac -cp jars/\* HelperClasses/*.java Server/*.java
   
