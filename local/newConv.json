@@ -1,0 +1,29 @@
+[
+  {
+    "previousHash": "0",
+    "currentHash": "23f79c2acbcf4eb0fdb2a020930675745f6bbf25e668e91379216153ccc313bc",
+    "timeStamp": "2019-03-24 06:55:19 PM",
+    "data": {
+      "uid": "UserA",
+      "message": "Start of Message History... \u0027newConv\u0027"
+    }
+  },
+  {
+    "previousHash": "23f79c2acbcf4eb0fdb2a020930675745f6bbf25e668e91379216153ccc313bc",
+    "currentHash": "32e6c78ca49a113ae44d6850f781b046694466ed3f7a1dacfe3ddb76d20a9c05",
+    "timeStamp": "2019-03-24 06:55:25 PM",
+    "data": {
+      "uid": "UserA",
+      "message": "this is a test"
+    }
+  },
+  {
+    "previousHash": "32e6c78ca49a113ae44d6850f781b046694466ed3f7a1dacfe3ddb76d20a9c05",
+    "currentHash": "e204743e73cb11a48bc9928bc2fca18e9ed1ad65949554c1a60922684c943a29",
+    "timeStamp": "2019-03-24 06:55:28 PM",
+    "data": {
+      "uid": "UserA",
+      "message": "I am user a"
+    }
+  }
+]

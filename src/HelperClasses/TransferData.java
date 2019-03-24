@@ -90,7 +90,7 @@ public class TransferData {
 	        
 	        //if server log is update 
 	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 1);}	//send server log to client
-	        else {System.out.println("Client log up-to-date...");}	//retrieve client log 
+	        else { System.out.println("Client log up-to-date..."); return 0; }	//retrieve client log 
 		}
 		
 		dis.close();
