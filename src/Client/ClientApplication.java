@@ -41,7 +41,7 @@ public class ClientApplication {
 		    String ip = ipList[ipField.getSelectedIndex()];
 		    String port = portField.getText();
 		    Socket servSock = TransferData.connect(ip, Integer.parseInt(port));
-			if (ip.matches("^localhost") || ip.matches("^[1-9]{1,3}.[1-9]{1,3}.[1-9]{1,3}.[1-9]{1,3}")) {
+			if (ip.matches("^localhost") || ip.matches("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}")) {
 				if (port.matches("^[0-9]{4}$")) {
 					if (servSock.isConnected()) {
 						System.out.println("Server is live at: " + ip + ":" + port);
