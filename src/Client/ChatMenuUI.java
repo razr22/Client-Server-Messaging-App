@@ -49,7 +49,9 @@ public class ChatMenuUI {
 	private JButton convo = createNewConvo();
 	private JButton existing = openExisting();
 	private JButton exitApp = createQuit();
-
+	
+	private static int req = 0;
+	
 	public ChatMenuUI(String sIP, int sPort) {
 		serverIP = sIP;
 		serverPort = sPort;
@@ -93,13 +95,7 @@ public class ChatMenuUI {
 					    	File logFile = new File(convName.getText() + ".json");
 							Path newPath = Paths.get("local/" + logFile);
 
-				    		if (!Files.exists(newPath)){
-//				    			try {
-//									Files.createDirectories(newPath.getParent());
-//									Files.createFile(newPath);
-//								}
-//								catch(FileAlreadyExistsException e4) {} catch (IOException e1) {}
-				    			
+				    		if (!Files.exists(newPath)){				    			
 						    	String res = convName.getText() + username.getText();
 						    	
 						    	while (res.length() < 16) {res += "0";}
@@ -129,8 +125,7 @@ public class ChatMenuUI {
 						    	if (!(convName.getText() == null) && !convName.getText().isEmpty() && !logFile.exists()) {	    	
 							    	ArrayList<Block> newChain = new ArrayList<Block>();
 							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'"), "0", pkey));
-				
-								    //logFile.createNewFile();
+
 									TransferData.writeToFile(newChain, convName.getText()); 
 								   
 									new ChatWindowUI(serverIP, serverPort, username.getText(), convName.getText(), newChain);
@@ -189,16 +184,22 @@ public static JButton openExisting() {
 							Files.createFile(newPath);
 						}
 						catch(FileAlreadyExistsException e4) {}	
+						ArrayList<Block> convHistory = null; 
 						
-						if (Files.exists(newPath)) {
+						if (Files.exists(newPath) && Files.size(newPath) > 0) {
 							BufferedReader bufferedReader = new BufferedReader(new FileReader(newPath.toString()));
 							System.out.println(newPath.toString());
 					        Gson gson = new Gson();
 					        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
-					        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
-	
-	
-					        if (!user.getText().isEmpty() || !user.getText().equals(null)) {
+					        convHistory = gson.fromJson(bufferedReader, listType);
+
+					        //check server for updated log.
+							req = TransferData.serverRequest(3, convName.getText(), convHistory.get(convHistory.size()-1).getTimeStamp(), serverIP, serverPort);
+							if (req == 1)
+								JOptionPane.showMessageDialog(null, "Downloaded updated log!", "Update Available", JOptionPane.INFORMATION_MESSAGE);
+					        
+							//start chat session
+							if (!user.getText().isEmpty() || !user.getText().equals(null)) {
 					        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
 					        	frame.dispose();
 					        }
@@ -208,9 +209,24 @@ public static JButton openExisting() {
 						//request server to check for log file
 						else {
 							System.out.println("log dne locally, checking server...");
-							int req = TransferData.serverRequest(2, convName.getText(), serverIP, serverPort);
+							req = TransferData.serverRequest(2, convName.getText(), null, serverIP, serverPort);
 							if (req != 1)
 								JOptionPane.showMessageDialog(null, "Conversation does not exist!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
+							else {
+								BufferedReader bufferedReader = new BufferedReader(new FileReader(newPath.toString()));
+								System.out.println(newPath.toString());
+						        Gson gson = new Gson();
+						        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
+						        convHistory = gson.fromJson(bufferedReader, listType);
+						        
+								if (!user.getText().isEmpty() || !user.getText().equals(null)) {
+						        	new ChatWindowUI(serverIP, serverPort, user.getText(), convName.getText(), convHistory);
+						        	frame.dispose();
+						        }
+						        else
+						    		JOptionPane.showMessageDialog(null, "Invalid Username!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
+							}
+							req = 0;
 						}
 					}
 					else JOptionPane.showMessageDialog(null, "Access Key Invalid...", "ERROR!", JOptionPane.INFORMATION_MESSAGE);

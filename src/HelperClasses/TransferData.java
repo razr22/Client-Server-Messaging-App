@@ -14,19 +14,60 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 public class TransferData {
 	private static boolean flag = false;
 	
-	public static int serverRequest(int reqID, String cname, String ip, int port) throws UnknownHostException, IOException {
+	public static int checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
+		System.out.println("Checking for updated log...");
+		
+		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
+		
+		while (dis.available() == 0) {}
+		
+		String fileName = dis.readUTF();
+		String clientTStamp = dis.readUTF();
+
+		File sLog = new File("server/" + fileName + ".json");
+
+		if (sLog.exists()) {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(sLog));
+	        Gson gson = new Gson();
+	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
+	        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
+	        String serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
+	        
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+	        
+	        Date serverDate = sdf.parse(serverTStamp);
+	        Date clientDate = sdf.parse(clientTStamp);
+	        
+	        //if server log is update 
+	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 2);}	//send server log to client
+	        else {System.out.println("Client log up-to-date...");}	//retrieve client log 
+		}
+		
+		dis.close();
+		reqSocket.close();
+		return 0;
+	}
+	
+	public static int serverRequest(int reqID, String cname, String tStamp, String ip, int port) throws UnknownHostException, IOException {
 		Socket reqSocket = new Socket(ip, port);
 		
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
@@ -34,6 +75,9 @@ public class TransferData {
 		dos.writeInt(reqID);
 		System.out.println("writing convName to server... " + cname);
 		dos.writeUTF(cname);
+		System.out.println("writing timeStamp to server... " + tStamp);
+		if (tStamp != null)
+			dos.writeUTF(tStamp);
 		dos.flush();
 		
 		DataInputStream dis = null;
@@ -47,14 +91,13 @@ public class TransferData {
 		int res = dis.readInt();
 		System.out.println("response ID... " + res);
 		if (res == 1) receiveFile2(reqSocket, cname);
-		else System.out.println("Conversation DNE");
-		
+		else if (res == 2) {System.out.println("Send file to server");}
 		dos.close();
 		reqSocket.close();
 		return res;
 	}
 	
-	public static void parseLogs(Socket reqSocket) throws IOException {
+	public static void retrieveServerLog(Socket reqSocket) throws IOException {
 		//retrieve name bytes
 		int exists = 0;
 		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
@@ -62,30 +105,33 @@ public class TransferData {
 		while (dis.available() == 0) {}
 		
 		String fileName = dis.readUTF();
-		
-		File sLog = new File("reference/" + fileName + ".json");
+		File sLog = new File("server/" + fileName + ".json");
 		
 		if (sLog.exists()) exists = 1;
-		else System.out.println(sLog.toString() + " does not exist.");
-		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
-		
+
 		if (exists == 1) {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(sLog));
-			String str = null;
-			String fmt = null;
-			System.out.println("Transmitting file... " + sLog.getName());
-			dos.writeInt(exists);
-			while ((str = bufferedReader.readLine()) != null) {
-				fmt = str + "\n";
-				dos.write(fmt.getBytes());
-				dos.flush();
-			}
-			bufferedReader.close();
-			dos.write("e\n".getBytes());
+			writeOut(reqSocket, sLog, exists);
+		}
+		
+		dis.close();
+	}
+	
+	private static void writeOut(Socket socket, File log, int response) throws IOException {
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(log));
+		String str = null;
+		String fmt = null;
+		System.out.println("Transmitting file... " + log.getName());
+		dos.writeInt(response);
+		while ((str = bufferedReader.readLine()) != null) {
+			fmt = str + "\n";
+			dos.write(fmt.getBytes());
 			dos.flush();
 		}
+		bufferedReader.close();
+		dos.write("e\n".getBytes());
+		dos.flush();
 		dos.close();
-		dis.close();
 	}
 	
 	public static void receiveFile2(Socket socket, String cname) throws IOException {
@@ -101,9 +147,7 @@ public class TransferData {
 			Files.createDirectories(newPath.getParent());
 			Files.createFile(newPath);
 		}
-		catch(FileAlreadyExistsException e) {
-			e.printStackTrace();
-		}	
+		catch(FileAlreadyExistsException e) {}	
 
 		String str = null;
 		String tmp = null;
@@ -176,7 +220,7 @@ public class TransferData {
 		System.out.println("receiving : " + fname);
 		
 		File sLog = new File(fname);
-		Path newPath = Paths.get("reference/" + sLog);
+		Path newPath = Paths.get("server/" + sLog);
 
 		try {
 			Files.createDirectories(newPath.getParent());

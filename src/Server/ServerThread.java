@@ -11,6 +11,8 @@ package Server;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.ParseException;
+
 import HelperClasses.TransferData;
 
 public class ServerThread extends Thread {
@@ -39,12 +41,16 @@ public class ServerThread extends Thread {
 	    			if (value == 1) {
 	    				TransferData.receiveFile(serversocket);
 	    			}
-	    			//on log request
+	    			//on local log DNE request
 	    			else if (value == 2) {
-	    				TransferData.parseLogs(serversocket);
+	    				TransferData.retrieveServerLog(serversocket);
 	    			}
-	    		}
-			} catch (IOException e) {
+	    			//on check for updated log request
+	    			else if (value == 3) {
+	    				TransferData.checkForUpdatedLog(serversocket);
+	    			}
+	    		}	
+			} catch (IOException | ParseException e) {
 				
 			}
 }
