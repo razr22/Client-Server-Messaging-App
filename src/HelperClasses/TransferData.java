@@ -64,7 +64,7 @@ public class TransferData {
 		return res;
 	}
 	
-	public static int checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
+	public static void checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
 		System.out.println("Checking for updated log...");
 		
 		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
@@ -90,14 +90,20 @@ public class TransferData {
 	        
 	        //if server log is update 
 	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 1);}	//send server log to client
-	        else { System.out.println("Client log up-to-date..."); return 0; }	//retrieve client log 
+	        else { System.out.println("Client log up-to-date..."); sendResponse(reqSocket, 0); }	//retrieve client log 
 		}
 		
 		dis.close();
 		reqSocket.close();
-		return 0;
 	}
 	
+	public static void sendResponse(Socket reqSocket, int response) throws IOException {
+		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
+		dos.writeInt(response);
+		System.out.println("Response sent : " + response);
+		dos.flush();
+		dos.close();
+	}
 	public static void retrieveServerLog(Socket reqSocket) throws IOException {
 		//retrieve name bytes
 		int exists = 0;
