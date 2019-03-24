@@ -191,13 +191,17 @@ public static JButton openExisting() {
 					        Gson gson = new Gson();
 					        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 					        convHistory = gson.fromJson(bufferedReader, listType);
-//					        bufferedReader.close();
+					        bufferedReader.close();
 					        
 					        //check server for updated log.
 							req = TransferData.serverRequest(3, convName.getText(), convHistory.get(convHistory.size()-1).getTimeStamp(), serverIP, serverPort);
 							if (req == 1) {
-								JOptionPane.showMessageDialog(null, "Downloaded updated log!", "Update Available", JOptionPane.INFORMATION_MESSAGE);
-								convHistory = gson.fromJson(bufferedReader, listType);
+								BufferedReader newReader = new BufferedReader(new FileReader(newPath.toString()));
+						        Gson ggson = new Gson();
+						        Type lType = new TypeToken<ArrayList<Block>>() {}.getType();
+						        convHistory = null; 
+						        convHistory = ggson.fromJson(newReader, lType);
+						        bufferedReader.close();
 							}
 							//start chat session
 							if (!user.getText().isEmpty() || !user.getText().equals(null)) {
