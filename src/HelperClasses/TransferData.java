@@ -40,6 +40,7 @@ public class TransferData {
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
 		dos.writeInt(reqID);
 		dos.writeUTF(cname);
+		System.out.println(tStamp);
 		if (tStamp != null)
 			dos.writeUTF(tStamp);
 		dos.flush();

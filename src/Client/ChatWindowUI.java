@@ -36,14 +36,12 @@ import java.util.regex.Pattern;
 class PingServer extends TimerTask {
 	private int reqID;
 	private String cname;
-	private String tStamp;
 	private String serverIP;
 	private int serverPort;
 	
-	public PingServer(int req, String cName, String tStamp, String serverIP, int serverPort) {
+	public PingServer(int req, String cName, String serverIP, int serverPort) {
 		this.reqID = req;
 		this.cname = cName;
-		this.tStamp = tStamp;
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 	}
@@ -51,9 +49,9 @@ class PingServer extends TimerTask {
 	public void run() {
 		try {
 			int req = 0;
-			TransferData.serverRequest(reqID, cname, tStamp, serverIP, serverPort);
+			TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp(), serverIP, serverPort);
 			if (req == 1)
-				ChatWindowUI.updateLog(cname, tStamp);
+				ChatWindowUI.updateLog(cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp());
 		} catch (IOException e) {
 			System.out.println("Could not request update from server...");
 		}
@@ -74,7 +72,7 @@ private JButton exit;
 boolean typing;
 
 private String convName;
-private static ArrayList<Block> convLog;
+static ArrayList<Block> convLog;
 private String uid;
 
 private String serverIP; 
@@ -92,10 +90,10 @@ private int first = 0;
         generateChat(this.convName, ChatWindowUI.convLog);
         
         timer = new Timer();
-        timer.schedule(new PingServer(3, convName, convLog.get(convLog.size()-1).getTimeStamp(), serverIP, serverPort), 0, 3500);
+        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 0, 3500);
     }
        
-    public static void updateLog(String cname, String localTStamp) throws FileNotFoundException {
+    public static String updateLog(String cname, String localTStamp) throws FileNotFoundException {
     	File cLog = new File("local/" + cname + ".json");
 
 		if (cLog.exists()) {
@@ -108,7 +106,9 @@ private int first = 0;
 	        convLog = newLog;
 	        textArea.setText("");
 	        fillContent(convLog);
+	        return newLog.get(newLog.size()-1).getTimeStamp();
 		}
+		return localTStamp;
     }
 		
     private void generateChat(String convName, ArrayList<Block> convLog){
