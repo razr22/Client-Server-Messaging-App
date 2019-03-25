@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -127,7 +128,12 @@ public class ChatMenuUI {
 							    	newChain.add(new Block(new Data(username.getText(),"Start of Message History... '" + convName.getText() + "'"), "0", pkey));
 
 									TransferData.writeToFile(newChain, convName.getText()); 
-								   
+									try {
+										TransferData.sendFile(convName.getText(), newChain, 0, serverIP, serverPort);
+									} catch (IOException e1) {
+										System.out.println("Cannot send initial log to server...");
+									}
+									
 									new ChatWindowUI(serverIP, serverPort, username.getText(), convName.getText(), newChain);
 									frame.dispose();
 						    	}

@@ -33,16 +33,13 @@ import com.google.gson.reflect.TypeToken;
 public class TransferData {
 	private static boolean flag = false;
 	
-	
+	//Client-side
 	public static int serverRequest(int reqID, String cname, String tStamp, String ip, int port) throws UnknownHostException, IOException {
 		Socket reqSocket = new Socket(ip, port);
 		
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
-		System.out.println("writing request to server... " + reqID);
 		dos.writeInt(reqID);
-		System.out.println("writing convName to server... " + cname);
 		dos.writeUTF(cname);
-		System.out.println("writing timeStamp to server... " + tStamp);
 		if (tStamp != null)
 			dos.writeUTF(tStamp);
 		dos.flush();
@@ -53,7 +50,6 @@ public class TransferData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("waiting for response... ");
 		while (dis.available() == 0) {}//wait
 		int res = dis.readInt();
 		System.out.println("response ID... " + res);
@@ -64,6 +60,7 @@ public class TransferData {
 		return res;
 	}
 	
+	//Server-side
 	public static void checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
 		System.out.println("Checking for updated log...");
 		
@@ -94,9 +91,9 @@ public class TransferData {
 		}
 		
 		dis.close();
-		reqSocket.close();
 	}
 	
+	//Server-side
 	public static void sendResponse(Socket reqSocket, int response) throws IOException {
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
 		dos.writeInt(response);
@@ -104,6 +101,8 @@ public class TransferData {
 		dos.flush();
 		dos.close();
 	}
+	
+	//Server-side
 	public static void retrieveServerLog(Socket reqSocket) throws IOException {
 		//retrieve name bytes
 		int exists = 0;
@@ -144,8 +143,8 @@ public class TransferData {
 	public static void receiveFile2(Socket socket, String cname) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		
-		if (br.ready()) {System.out.println("ready to receive data...");}
-		else System.out.println("server unable to read data...");
+		//if (br.ready()) {System.out.println("ready to receive data...");}
+		//else System.out.println("server unable to read data...");
 		
 		File sLog = new File(cname + ".json");
 		Path newPath = Paths.get("local/" + sLog);
@@ -220,8 +219,8 @@ public class TransferData {
 	public static void receiveFile(Socket socket) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		
-		if (br.ready()) {System.out.println("ready to receive data...");}
-		else System.out.println("server unable to read data...");
+		//if (br.ready()) {System.out.println("ready to receive data...");}
+		//else System.out.println("server unable to read data...");
 		
 		String fname =  br.readLine();
 		System.out.println("receiving : " + fname);

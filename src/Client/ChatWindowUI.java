@@ -9,6 +9,9 @@ package Client;
 
 import javax.swing.*;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import HelperClasses.Block;
 import HelperClasses.Data;
 import HelperClasses.DataEncryption;
@@ -16,18 +19,56 @@ import HelperClasses.TransferData;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+class PingServer extends TimerTask {
+	private int reqID;
+	private String cname;
+	private String tStamp;
+	private String serverIP;
+	private int serverPort;
+	
+	public PingServer(int req, String cName, String tStamp, String serverIP, int serverPort) {
+		this.reqID = req;
+		this.cname = cName;
+		this.tStamp = tStamp;
+		this.serverIP = serverIP;
+		this.serverPort = serverPort;
+	}
+	
+	public void run() {
+		try {
+			int req = 0;
+			TransferData.serverRequest(reqID, cname, tStamp, serverIP, serverPort);
+			if (req == 1)
+				ChatWindowUI.updateLog(cname, tStamp);
+		} catch (IOException e) {
+			System.out.println("Could not request update from server...");
+		}
+	}
+}
+
+//timer = new Timer();
+//timer.schedule(new run(), 0, 500);
 
 public class ChatWindowUI extends Thread {
+private Timer timer;
+	
 private JPanel panel;
 private JTextArea textField;
-private JTextArea textArea;
+private static JTextArea textArea;
 private JFrame frame;
 private JButton exit;
 boolean typing;
@@ -39,6 +80,7 @@ private String uid;
 private String serverIP; 
 private int serverPort;
 
+//private Thread t;
 private int first = 0;
 
     public ChatWindowUI(String sIP, int sPort, String UID, String convName, ArrayList<Block> convLog){
@@ -48,8 +90,25 @@ private int first = 0;
     	this.convName = convName;
         this.convLog = convLog;
         generateChat(this.convName, this.convLog);
+        
+        timer = new Timer();
+        timer.schedule(new PingServer(3, convName, convLog.get(convLog.size()-1).getTimeStamp(), serverIP, serverPort), 0, 3500);
     }
        
+    public static void updateLog(String cname, String localTStamp) throws FileNotFoundException {
+    	File cLog = new File("local/" + cname + ".json");
+
+		if (cLog.exists()) {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(cLog));
+	        Gson gson = new Gson();
+	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
+	        ArrayList<Block> newLog = gson.fromJson(bufferedReader, listType);
+	        
+	        textArea.setText("");
+	        fillContent(newLog);
+		}
+    }
+		
     private void generateChat(String convName, ArrayList<Block> convLog){
     	 frame = new JFrame(uid);
     	 textField = new JTextArea();
@@ -84,6 +143,8 @@ private int first = 0;
 	     exit = new JButton("Exit");
 		 exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				timer.cancel();
+				//t.stop();
 				frame.dispose();
 			}
 		 });
@@ -113,7 +174,24 @@ private int first = 0;
         textArea.setMargin(new Insets(7,7,7,7));
         
         //POPULATE MESSAGES IN WINDOW
-        if (convLog.size() > 1) {
+        fillContent(convLog);
+        
+        
+        JScrollPane scroll = new JScrollPane(textArea);
+        frame.add(scroll);
+       
+        //FRAME INFO
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
+        frame.setSize(350,400);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+      
+    }
+    
+    public static void fillContent(ArrayList<Block> convLog) {
+    	System.out.println("Updating window...");
+    	if (convLog.size() > 1) {
         	String pattern = "([0-9]){2}:([0-9]){2}:([0-9]){2} [A|P]{1}[M]{1}$";
         	Pattern pat = Pattern.compile(pattern);
 
@@ -125,19 +203,10 @@ private int first = 0;
 	        		textArea.append(out + "\n");
 	        	}
 	        }
+	    	System.out.println("Window updated...");
         }
         else textArea.append(convLog.get(0).data.getMessage() + "\n");
-        JScrollPane scroll = new JScrollPane(textArea);
-        frame.add(scroll);
-       
-        //FRAME INFO
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.setSize(350,400);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
     }
-    
     //USER HITS ENTER
     public ArrayList<Block> logMessage(String text, ArrayList<Block> log) throws IOException{
         // If text is empty return
