@@ -74,7 +74,7 @@ private JButton exit;
 boolean typing;
 
 private String convName;
-private ArrayList<Block> convLog;
+private static ArrayList<Block> convLog;
 private String uid;
 
 private String serverIP; 
@@ -88,8 +88,8 @@ private int first = 0;
     	serverPort = sPort;
         uid = UID;	
     	this.convName = convName;
-        this.convLog = convLog;
-        generateChat(this.convName, this.convLog);
+        ChatWindowUI.convLog = convLog;
+        generateChat(this.convName, ChatWindowUI.convLog);
         
         timer = new Timer();
         timer.schedule(new PingServer(3, convName, convLog.get(convLog.size()-1).getTimeStamp(), serverIP, serverPort), 0, 3500);
@@ -103,9 +103,11 @@ private int first = 0;
 	        Gson gson = new Gson();
 	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 	        ArrayList<Block> newLog = gson.fromJson(bufferedReader, listType);
-	        
+//	        convLog.clear();
+//	        convLog.addAll(newLog);
+	        convLog = newLog;
 	        textArea.setText("");
-	        fillContent(newLog);
+	        fillContent(convLog);
 		}
     }
 		
