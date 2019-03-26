@@ -35,7 +35,7 @@ public class TransferData {
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
 		dos.writeInt(reqID);
 		dos.writeUTF(cname);
-		dos.writeUTF(uid);
+		//dos.writeUTF(uid);
 		dos.writeInt(chainSize);
 		dos.flush();
 		
@@ -47,7 +47,9 @@ public class TransferData {
 		}
 		while (dis.available() == 0) {}//wait
 		int res = dis.readInt();
-		if (res == 1) receiveFile2(reqSocket, cname, "local/");
+		if (res == 1) {
+			receiveFile(reqSocket, "local/");
+		}
 //		else if (res == 2) {}
 		else if (res == 0) System.out.println("Request processed with err output...");
 		dos.close();
@@ -80,18 +82,9 @@ public class TransferData {
 		}
 		
 		dis.close();
-		reqSocket.close();
+		//reqSocket.close();
 	}
-	
-	//Server-side
-	public static void sendResponse(Socket reqSocket, int response) throws IOException {
-		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
-		dos.writeInt(response);
-		dos.flush();
-		dos.close();
-		reqSocket.close();
-	}
-	
+
 	//Server-side
 	public static void retrieveServerLog(Socket reqSocket, String loc) throws IOException {
 		//retrieve name bytes
@@ -101,8 +94,8 @@ public class TransferData {
 		while (dis.available() == 0) {}
 		
 		String fileName = dis.readUTF();
-		String uid = dis.readUTF();
-		System.out.println("Req from user : " + uid);
+		//String uid = dis.readUTF();
+		//System.out.println("Req from user : " + uid);
 		
 		File sLog = new File(loc + fileName + ".json");
 		
@@ -113,114 +106,27 @@ public class TransferData {
 		}
 		
 		dis.close();
-		reqSocket.close();
-	}
-	
-	private static void writeOut(Socket socket, File log, int response) throws IOException {
-		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-		BufferedReader bufferedReader = new BufferedReader(new FileReader(log));
-		String str = null;
-		String fmt = null;
-		System.out.println("Transmitting file... " + log.getName());
-		dos.writeInt(response);
-		while ((str = bufferedReader.readLine()) != null) {
-			fmt = str + "\n";
-			dos.write(fmt.getBytes());
-			dos.flush();
-		}
-		bufferedReader.close();
-		dos.write("e\n".getBytes());
-		dos.flush();
-		dos.close();
-		socket.close();
+		//reqSocket.close();
 	}
 
-	//sends log data to destination.
-	public static int sendFile(String convName, String uname, ArrayList<Block> convLog, int first, String ip, int port) throws IOException {
-		Socket temp = new Socket(ip, port);
-		DataOutputStream dos = new DataOutputStream(temp.getOutputStream());
-		String name = convName + ".json";
-		File local = new File("local/" + name);
-		
-		if (first == 0) {
-			dos.writeInt(1);
-			String test = local.getName() + "\n";
-			dos.write(test.getBytes());
-			uname = uname + "\n";
-			dos.write(uname.getBytes());
-			dos.flush();
-			
-			first = 1;
-		}
-		if (local.exists()) {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(local));
-			String str = null;
-			String fmt = null;
-			System.out.println("Transmitting file... " + local.getName());
-			while ((str = bufferedReader.readLine()) != null) {
-				fmt = str + "\n";
-				dos.write(fmt.getBytes());
-				dos.flush();
-			}
-			bufferedReader.close();
-			first = 0;
-		}
-		else System.out.println("Error! local file DNE.");
-		dos.write("e\n".getBytes());
+	//Server-side
+	public static void sendResponse(Socket reqSocket, int response) throws IOException {
+		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
+		dos.writeInt(response);
 		dos.flush();
 		dos.close();
-		temp.close();
-		return first;        
-    }
-	
+//		reqSocket.close();
+	}
+
 	//reads incoming file data into local log.
 	public static void receiveFile(Socket socket, String loc) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 		String fname =  br.readLine();
-		String user = br.readLine();
-		System.out.println("receiving : " + fname + " from user : " + user);
+		//String user = br.readLine();
+		System.out.println("receiving : " + fname);
 		
 		File sLog = new File(fname);
-		Path newPath = Paths.get(loc + sLog);
-
-		try {
-			Files.createDirectories(newPath.getParent());
-			Files.createFile(newPath);
-		}
-		catch(FileAlreadyExistsException e) {
-//			PrintWriter pw = new PrintWriter(newPath.toString());
-//			pw.close();
-		}	
-
-		String str = null;
-		String tmp = null;
-		
-		str = null;
-		ArrayList<String> read = new ArrayList<String>();
-		while (!(str = br.readLine()).equals("e")) {	
-			if (str.equals("]")) tmp = str;
-			else tmp = str + "\n";
-			
-			read.add(tmp);
-		}
-
-		int i = 0;
-		FileOutputStream fos = new FileOutputStream(newPath.toString(), false);
-		while (i < read.size()) {
-			fos.write(read.get(i).getBytes());
-			fos.flush();
-			i++;			
-		}
-		fos.close();
-		socket.close();
-	}
-
-	public static void receiveFile2(Socket socket, String cname, String loc) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		System.out.println("receiving : " + cname);
-		
-		File sLog = new File(cname + ".json");
 		Path newPath = Paths.get(loc + sLog);
 
 		try {
@@ -248,6 +154,71 @@ public class TransferData {
 			i++;			
 		}
 		fos.close();
+		socket.close();
+	}
+		
+	//sends log data to destination.
+	public static int sendFile(String convName, String uname, ArrayList<Block> convLog, int first, String ip, int port) throws IOException {
+		Socket temp = new Socket(ip, port);
+		DataOutputStream dos = new DataOutputStream(temp.getOutputStream());
+		String name = convName + ".json";
+		File local = new File("local/" + name);
+		
+		if (first == 0) {
+			dos.writeInt(1);
+			//write filename to OS.
+			String test = local.getName() + "\n";
+			dos.write(test.getBytes());
+			//write username to OS.
+			//uname = uname + "\n";
+			//dos.write(uname.getBytes());
+			dos.flush();
+			
+			first = 1;
+		}
+		if (local.exists()) {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(local));
+			String str = null;
+			String fmt = null;
+			System.out.println("Client Transmitting file... " + local.getName());
+			while ((str = bufferedReader.readLine()) != null) {
+				fmt = str + "\n";
+				dos.write(fmt.getBytes());
+				dos.flush();
+			}
+			bufferedReader.close();
+			first = 0;
+		}
+		else System.out.println("Error! local file DNE.");
+		dos.write("e\n".getBytes());
+		dos.flush();
+		dos.close();
+		temp.close();
+		return first;        
+    }
+
+	private static void writeOut(Socket socket, File log, int response) throws IOException {
+		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(log));
+		String str = null;
+		String fmt = null;
+		System.out.println("Transmitting file... " + log.getName());
+		dos.writeInt(response);
+		
+		String fname = log.getName() + "\n";
+		dos.write(fname.getBytes());
+		//uid = uid + "\n";
+		//dos.write(uid.getBytes());
+		dos.flush();
+		
+		while ((str = bufferedReader.readLine()) != null) {
+			fmt = str + "\n";
+			dos.write(fmt.getBytes());
+		}
+		bufferedReader.close();
+		dos.write("e\n".getBytes());
+		dos.flush();
+		dos.close();
 		socket.close();
 	}
 	

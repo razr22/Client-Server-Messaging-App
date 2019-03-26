@@ -51,7 +51,6 @@ class PingServer extends TimerTask {
 	public void run() {
 		try {
 			int req = 0;
-			//System.out.println("User request : " + ChatWindowUI.uid);
 			req = TransferData.serverRequest(reqID, ChatWindowUI.uid, cname, ChatWindowUI.convLog.size(), serverIP, serverPort);
 
 			if (req == 1) {
@@ -88,7 +87,6 @@ static String uid;
 private String serverIP; 
 private int serverPort;
 
-//private Thread t;
 private int first = 0;
 
     public ChatWindowUI(String sIP, int sPort, String UID, String convName, ArrayList<Block> convLog){
@@ -101,8 +99,8 @@ private int first = 0;
         
         timer = new Timer();
         Random random = new Random();
-        int refresh = random.nextInt(2500) + 1200;
-        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 25, refresh);
+        int refresh = random.nextInt(5000) + 1200;
+        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 50, refresh);
     }
     public static void fillContent(ArrayList<Block> log) {
         textArea.setText("");
