@@ -31,8 +31,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class TransferData {
-	private static boolean flag = false;
-	
 	//Client-side
 	public static int serverRequest(int reqID, String cname, String tStamp, String ip, int port) throws UnknownHostException, IOException {
 		Socket reqSocket = new Socket(ip, port);
@@ -63,8 +61,6 @@ public class TransferData {
 	
 	//Server-side
 	public static void checkForUpdatedLog(Socket reqSocket) throws IOException, ParseException {
-		System.out.println("Checking for updated log...");
-		
 		DataInputStream dis = new DataInputStream(reqSocket.getInputStream());
 		
 		while (dis.available() == 0) {}
@@ -79,7 +75,10 @@ public class TransferData {
 	        Gson gson = new Gson();
 	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 	        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
-	        String serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
+	        
+	        String serverTStamp = null;
+	        if (convHistory != null)
+	        	serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
 	        
 	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
 	        
@@ -98,7 +97,6 @@ public class TransferData {
 	public static void sendResponse(Socket reqSocket, int response) throws IOException {
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
 		dos.writeInt(response);
-		System.out.println("Response sent : " + response);
 		dos.flush();
 		dos.close();
 	}
@@ -232,12 +230,9 @@ public class TransferData {
 		try {
 			Files.createDirectories(newPath.getParent());
 			Files.createFile(newPath);
-			System.out.println("Creating file...");
 		}
 		catch(FileAlreadyExistsException e) {
 			System.out.println("file exists...");
-			flag = true;
-
 			PrintWriter pw = new PrintWriter(newPath.toString());
 			pw.close();
 		}	
@@ -252,9 +247,6 @@ public class TransferData {
 			else tmp = str + "\n";
 			
 			read.add(tmp);
-		}
-		if (flag) { 
-			System.out.println("Checking file contents...");
 		}
 
 		int i = 0;

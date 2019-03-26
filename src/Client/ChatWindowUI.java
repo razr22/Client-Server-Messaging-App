@@ -92,14 +92,12 @@ private int first = 0;
        
     public static String updateLog(String cname, String localTStamp) throws FileNotFoundException {
     	File cLog = new File("local/" + cname + ".json");
-    	System.out.println("updating local log...");
 		if (cLog.exists()) {
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(cLog));
 	        Gson gson = new Gson();
 	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 	        ArrayList<Block> newLog = gson.fromJson(bufferedReader, listType);
 	        ChatWindowUI.convLog = newLog;
-	        System.out.println("New Log Available");
 	        fillContent(ChatWindowUI.convLog);
 	        return newLog.get(newLog.size()-1).getTimeStamp();
 		}

@@ -219,7 +219,6 @@ public static JButton openExisting() {
 						}
 						//request server to check for log file
 						else {
-							System.out.println("log dne locally, checking server...");
 							req = TransferData.serverRequest(2, convName.getText(), null, serverIP, serverPort);
 							if (req != 1)
 								JOptionPane.showMessageDialog(null, "Conversation does not exist!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
