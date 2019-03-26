@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Zain Quraishi/Desktop/Eclipse/TestBlockchain/src/jars/bcprov-jdk15on-161.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Zain Quraishi/Desktop/Eclipse/TestBlockchain/src/jars/gson-2.6.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Zain Quraishi/Desktop/JAVA/TestBlockchain/src/jars/bcprov-jdk15on-161.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Zain Quraishi/Desktop/JAVA/TestBlockchain/src/jars/gson-2.6.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
