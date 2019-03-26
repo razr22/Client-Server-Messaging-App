@@ -21,10 +21,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,9 +50,19 @@ class PingServer extends TimerTask {
 	public void run() {
 		try {
 			int req = 0;
-			req = TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp(), serverIP, serverPort);
-			if (req == 1)
-				ChatWindowUI.updateLog(cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp());
+			req = TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.size(), serverIP, serverPort);
+
+			if (req == 1) {
+				File f = new File(cname + ".json");
+				Path newPath = Paths.get("local/" + f);
+				BufferedReader newReader = new BufferedReader(new FileReader(newPath.toString()));
+		        Gson gson = new Gson();
+		        Type lType = new TypeToken<ArrayList<Block>>() {}.getType();
+		        ChatWindowUI.convLog = null; 
+		        ChatWindowUI.convLog = gson.fromJson(newReader, lType);
+		        newReader.close();
+		        ChatWindowUI.fillContent(ChatWindowUI.convLog);
+			}
 		} catch (IOException e) {
 			System.out.println("Could not request update from server...");
 		}
@@ -89,21 +100,24 @@ private int first = 0;
         timer = new Timer();
         timer.schedule(new PingServer(3, convName, serverIP, serverPort), 0, 2500);
     }
-       
-    public static String updateLog(String cname, String localTStamp) throws FileNotFoundException {
-    	File cLog = new File("local/" + cname + ".json");
-		if (cLog.exists()) {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(cLog));
-	        Gson gson = new Gson();
-	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
-	        ArrayList<Block> newLog = gson.fromJson(bufferedReader, listType);
-	        ChatWindowUI.convLog = newLog;
-	        fillContent(ChatWindowUI.convLog);
-	        return newLog.get(newLog.size()-1).getTimeStamp();
-		}
-		return localTStamp;
+    public static void fillContent(ArrayList<Block> log) {
+        textArea.setText("");
+    	if (log.size() > 1) {
+        	String pattern = "([0-9]){2}:([0-9]){2}:([0-9]){2} [A|P]{1}[M]{1}$";
+        	Pattern pat = Pattern.compile(pattern);
+
+        	textArea.append(log.get(0).data.getMessage() + "\n");
+	        for (int i = 1; i < log.size(); i++) {
+	        	Matcher match = pat.matcher(log.get(i).getTimeStamp());
+	        	if (match.find()) {
+	        		String out = log.get(i).data.getUserID() +  " [" + match.group() + "]: " + log.get(i).data.getMessage();
+	        		textArea.append(out + "\n");
+	        	}
+	        }
+        }
+        else textArea.append(log.get(0).data.getMessage() + "\n");
     }
-		
+
     private void generateChat(String convName, ArrayList<Block> log){
     	 frame = new JFrame(uid);
     	 textField = new JTextArea();
@@ -185,25 +199,6 @@ private int first = 0;
       
     }
     
-    public static void fillContent(ArrayList<Block> log) {
-    	System.out.println("Updating window...");
-        textArea.setText("");
-    	if (log.size() > 1) {
-        	String pattern = "([0-9]){2}:([0-9]){2}:([0-9]){2} [A|P]{1}[M]{1}$";
-        	Pattern pat = Pattern.compile(pattern);
-
-        	textArea.append(log.get(0).data.getMessage() + "\n");
-	        for (int i = 1; i < log.size(); i++) {
-	        	Matcher match = pat.matcher(log.get(i).getTimeStamp());
-	        	if (match.find()) {
-	        		String out = log.get(i).data.getUserID() +  " [" + match.group() + "]: " + log.get(i).data.getMessage();
-	        		textArea.append(out + "\n");
-	        	}
-	        }
-	    	System.out.println("Window updated...");
-        }
-        else textArea.append(log.get(0).data.getMessage() + "\n");
-    }
     //USER HITS ENTER
     public ArrayList<Block> logMessage(String text, ArrayList<Block> log) throws IOException{
         // If text is empty return

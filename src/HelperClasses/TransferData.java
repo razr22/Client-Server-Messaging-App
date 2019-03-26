@@ -22,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,15 +30,13 @@ import com.google.gson.reflect.TypeToken;
 
 public class TransferData {
 	//Client-side
-	public static int serverRequest(int reqID, String cname, String tStamp, String ip, int port) throws UnknownHostException, IOException {
+	public static int serverRequest(int reqID, String cname, int chainSize, String ip, int port) throws UnknownHostException, IOException {
 		Socket reqSocket = new Socket(ip, port);
 		
 		DataOutputStream dos = new DataOutputStream(reqSocket.getOutputStream());
 		dos.writeInt(reqID);
 		dos.writeUTF(cname);
-		System.out.println(tStamp);
-		if (tStamp != null)
-			dos.writeUTF(tStamp);
+		dos.writeInt(chainSize);
 		dos.flush();
 		
 		DataInputStream dis = null;
@@ -51,7 +47,6 @@ public class TransferData {
 		}
 		while (dis.available() == 0) {}//wait
 		int res = dis.readInt();
-		System.out.println("response ID... " + res);
 		if (res == 1) receiveFile2(reqSocket, cname);
 		else if (res == 2) {System.out.println("Send file to server");}
 		dos.close();
@@ -66,7 +61,7 @@ public class TransferData {
 		while (dis.available() == 0) {}
 		
 		String fileName = dis.readUTF();
-		String clientTStamp = dis.readUTF();
+		int clientSize = dis.readInt();
 
 		File sLog = new File("server/" + fileName + ".json");
 
@@ -76,18 +71,9 @@ public class TransferData {
 	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 	        ArrayList<Block> convHistory = gson.fromJson(bufferedReader, listType);
 	        
-	        String serverTStamp = null;
-	        if (convHistory != null)
-	        	serverTStamp = convHistory.get(convHistory.size()-1).getTimeStamp();
-	        
-	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
-	        
-	        Date serverDate = sdf.parse(serverTStamp);
-	        Date clientDate = sdf.parse(clientTStamp);
-	        
-	        //if server log is update 
-	        if (serverDate.compareTo(clientDate) > 0) {writeOut(reqSocket, sLog, 1);}	//send server log to client
-	        else { System.out.println("Client log up-to-date..."); sendResponse(reqSocket, 0); }	//retrieve client log 
+	        int serverSize = convHistory.size();
+	        if (serverSize > clientSize) {writeOut(reqSocket, sLog, 1);}	//send server log to client
+	        else { System.out.println("Client log up-to-date..."); sendResponse(reqSocket, 0); }	//retrieve client log      
 		}
 		
 		dis.close();
@@ -141,9 +127,6 @@ public class TransferData {
 	
 	public static void receiveFile2(Socket socket, String cname) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		
-		//if (br.ready()) {System.out.println("ready to receive data...");}
-		//else System.out.println("server unable to read data...");
 		
 		File sLog = new File(cname + ".json");
 		Path newPath = Paths.get("local/" + sLog);
@@ -217,10 +200,7 @@ public class TransferData {
 	//reads incoming file data into local log.
 	public static void receiveFile(Socket socket) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		
-		//if (br.ready()) {System.out.println("ready to receive data...");}
-		//else System.out.println("server unable to read data...");
-		
+
 		String fname =  br.readLine();
 		System.out.println("receiving : " + fname);
 		
@@ -232,7 +212,6 @@ public class TransferData {
 			Files.createFile(newPath);
 		}
 		catch(FileAlreadyExistsException e) {
-			System.out.println("file exists...");
 			PrintWriter pw = new PrintWriter(newPath.toString());
 			pw.close();
 		}	

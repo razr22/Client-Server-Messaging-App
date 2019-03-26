@@ -200,7 +200,7 @@ public static JButton openExisting() {
 					        bufferedReader.close();
 					        
 					        //check server for updated log.
-							req = TransferData.serverRequest(3, convName.getText(), convHistory.get(convHistory.size()-1).getTimeStamp(), serverIP, serverPort);
+							req = TransferData.serverRequest(3, convName.getText(), convHistory.size(), serverIP, serverPort);
 							if (req == 1) {
 								BufferedReader newReader = new BufferedReader(new FileReader(newPath.toString()));
 						        Gson ggson = new Gson();
@@ -219,12 +219,11 @@ public static JButton openExisting() {
 						}
 						//request server to check for log file
 						else {
-							req = TransferData.serverRequest(2, convName.getText(), null, serverIP, serverPort);
+							req = TransferData.serverRequest(2, convName.getText(), 0, serverIP, serverPort);
 							if (req != 1)
 								JOptionPane.showMessageDialog(null, "Conversation does not exist!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
 							else {
 								BufferedReader bufferedReader = new BufferedReader(new FileReader(newPath.toString()));
-								System.out.println(newPath.toString());
 						        Gson gson = new Gson();
 						        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 						        convHistory = gson.fromJson(bufferedReader, listType);
