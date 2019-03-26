@@ -129,7 +129,7 @@ public class ChatMenuUI {
 
 									TransferData.writeToFile(newChain, convName.getText()); 
 									try {
-										TransferData.sendFile(convName.getText(), newChain, 0, serverIP, serverPort);
+										TransferData.sendFile(convName.getText(), username.getText(), newChain, 0, serverIP, serverPort);
 									} catch (IOException e1) {
 										System.out.println("Cannot send initial log to server...");
 									}
@@ -200,7 +200,7 @@ public static JButton openExisting() {
 					        bufferedReader.close();
 					        
 					        //check server for updated log.
-							req = TransferData.serverRequest(3, convName.getText(), convHistory.size(), serverIP, serverPort);
+							req = TransferData.serverRequest(3, user.getText(), convName.getText(), convHistory.size(), serverIP, serverPort);
 							if (req == 1) {
 								BufferedReader newReader = new BufferedReader(new FileReader(newPath.toString()));
 						        Gson ggson = new Gson();
@@ -219,7 +219,7 @@ public static JButton openExisting() {
 						}
 						//request server to check for log file
 						else {
-							req = TransferData.serverRequest(2, convName.getText(), 0, serverIP, serverPort);
+							req = TransferData.serverRequest(2, user.getText(), convName.getText(), 0, serverIP, serverPort);
 							if (req != 1)
 								JOptionPane.showMessageDialog(null, "Conversation does not exist!", "ERROR", JOptionPane.INFORMATION_MESSAGE);
 							else {

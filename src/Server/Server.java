@@ -15,16 +15,18 @@ public class Server {
 	private static ServerSocket serversocket;
 	private static Socket socket = null;
 	
-	public Server(ServerSocket socket) throws IOException {
-		Server.serversocket = socket;
-        System.out.println("Server Listening for Connection Requests on Port : " + Server.serversocket.getLocalPort());
-	}
+//	public Server(ServerSocket socket) throws IOException {
+//		Server.serversocket = socket;
+//       
+//	}
 		
 	 public static void main(String args[]) throws IOException {		
 		//creating simple web server to listen to incoming messages.
 		try {
 		//creates socket based on address given.
-	        new Server(new ServerSocket(5001));
+	        //new Server(new ServerSocket(5001));
+			serversocket = new ServerSocket(5001);
+			 System.out.println("Server Listening for Connection Requests on Port : " + Server.serversocket.getLocalPort());
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }

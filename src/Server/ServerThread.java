@@ -23,7 +23,7 @@ public class ServerThread extends Thread {
 	}
 		
 	public void run() {
-		System.out.println("Client at : " + serversocket.getRemoteSocketAddress().toString() + " connected...");
+		//System.out.println("Client at : " + serversocket.getRemoteSocketAddress().toString() + " connected...");
     	
     	DataInputStream dis = null;
     	
@@ -39,20 +39,18 @@ public class ServerThread extends Thread {
 	    			int value = dis.readInt();
 	    			//On file reception, store incoming log file
 	    			if (value == 1) {
-	    				TransferData.receiveFile(serversocket);
+	    				TransferData.receiveFile(serversocket, "server/");
 	    			}
 	    			//on local log DNE request
 	    			else if (value == 2) {
-	    				TransferData.retrieveServerLog(serversocket);
+	    				TransferData.retrieveServerLog(serversocket, "server/");
 	    			}
 	    			//on check for updated log request
 	    			else if (value == 3) {
-	    				TransferData.checkForUpdatedLog(serversocket);
+	    				TransferData.checkForUpdatedLog(serversocket, "server/");
 	    			}
 	    		}	
-			} catch (IOException | ParseException e) {
-				
-			}
+			} catch (IOException | ParseException e) {}
 }
 	}
 }

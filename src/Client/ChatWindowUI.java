@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -50,7 +51,8 @@ class PingServer extends TimerTask {
 	public void run() {
 		try {
 			int req = 0;
-			req = TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.size(), serverIP, serverPort);
+			//System.out.println("User request : " + ChatWindowUI.uid);
+			req = TransferData.serverRequest(reqID, ChatWindowUI.uid, cname, ChatWindowUI.convLog.size(), serverIP, serverPort);
 
 			if (req == 1) {
 				File f = new File(cname + ".json");
@@ -63,7 +65,7 @@ class PingServer extends TimerTask {
 		        newReader.close();
 		        ChatWindowUI.fillContent(ChatWindowUI.convLog);
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			System.out.println("Could not request update from server...");
 		}
 	}
@@ -81,7 +83,7 @@ boolean typing;
 
 private String convName;
 static ArrayList<Block> convLog;
-private String uid;
+static String uid;
 
 private String serverIP; 
 private int serverPort;
@@ -98,7 +100,9 @@ private int first = 0;
         generateChat(this.convName, ChatWindowUI.convLog);
         
         timer = new Timer();
-        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 0, 2500);
+        Random random = new Random();
+        int refresh = random.nextInt(2500) + 1200;
+        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 25, refresh);
     }
     public static void fillContent(ArrayList<Block> log) {
         textArea.setText("");
@@ -212,7 +216,7 @@ private int first = 0;
         
         TransferData.writeToFile(log, convName);
 
-        first = TransferData.sendFile(convName, log, first, serverIP, serverPort);
+        first = TransferData.sendFile(convName, uid, log, first, serverIP, serverPort);
         
         return log;
     }
