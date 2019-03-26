@@ -49,7 +49,7 @@ class PingServer extends TimerTask {
 	public void run() {
 		try {
 			int req = 0;
-			TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp(), serverIP, serverPort);
+			req = TransferData.serverRequest(reqID, cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp(), serverIP, serverPort);
 			if (req == 1)
 				ChatWindowUI.updateLog(cname, ChatWindowUI.convLog.get(ChatWindowUI.convLog.size()-1).getTimeStamp());
 		} catch (IOException e) {
@@ -57,9 +57,6 @@ class PingServer extends TimerTask {
 		}
 	}
 }
-
-//timer = new Timer();
-//timer.schedule(new run(), 0, 500);
 
 public class ChatWindowUI extends Thread {
 private Timer timer;
@@ -90,28 +87,26 @@ private int first = 0;
         generateChat(this.convName, ChatWindowUI.convLog);
         
         timer = new Timer();
-        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 0, 3500);
+        timer.schedule(new PingServer(3, convName, serverIP, serverPort), 0, 2500);
     }
        
     public static String updateLog(String cname, String localTStamp) throws FileNotFoundException {
     	File cLog = new File("local/" + cname + ".json");
-
+    	System.out.println("updating local log...");
 		if (cLog.exists()) {
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(cLog));
 	        Gson gson = new Gson();
 	        Type listType = new TypeToken<ArrayList<Block>>() {}.getType();
 	        ArrayList<Block> newLog = gson.fromJson(bufferedReader, listType);
-//	        convLog.clear();
-//	        convLog.addAll(newLog);
-	        convLog = newLog;
-	        textArea.setText("");
-	        fillContent(convLog);
+	        ChatWindowUI.convLog = newLog;
+	        System.out.println("New Log Available");
+	        fillContent(ChatWindowUI.convLog);
 	        return newLog.get(newLog.size()-1).getTimeStamp();
 		}
 		return localTStamp;
     }
 		
-    private void generateChat(String convName, ArrayList<Block> convLog){
+    private void generateChat(String convName, ArrayList<Block> log){
     	 frame = new JFrame(uid);
     	 textField = new JTextArea();
 		 textField.addFocusListener(new FocusListener() {
@@ -128,7 +123,7 @@ private int first = 0;
 		     public void keyPressed(KeyEvent key){
 		     	if(key.getKeyCode()==KeyEvent.VK_ENTER && !textField.getText().equals("Enter Message...") && !textField.getText().isEmpty()) {
 		 		try {
-					logMessage(textField.getText(), convLog);
+					logMessage(textField.getText(), log);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -146,8 +141,9 @@ private int first = 0;
 		 exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				timer.cancel();
-				//t.stop();
+				//t.stop()
 				frame.dispose();
+				System.exit(0);
 			}
 		 });
          
@@ -191,23 +187,24 @@ private int first = 0;
       
     }
     
-    public static void fillContent(ArrayList<Block> convLog) {
+    public static void fillContent(ArrayList<Block> log) {
     	System.out.println("Updating window...");
-    	if (convLog.size() > 1) {
+        textArea.setText("");
+    	if (log.size() > 1) {
         	String pattern = "([0-9]){2}:([0-9]){2}:([0-9]){2} [A|P]{1}[M]{1}$";
         	Pattern pat = Pattern.compile(pattern);
 
-        	textArea.append(convLog.get(0).data.getMessage() + "\n");
-	        for (int i = 1; i < convLog.size(); i++) {
-	        	Matcher match = pat.matcher(convLog.get(i).getTimeStamp());
+        	textArea.append(log.get(0).data.getMessage() + "\n");
+	        for (int i = 1; i < log.size(); i++) {
+	        	Matcher match = pat.matcher(log.get(i).getTimeStamp());
 	        	if (match.find()) {
-	        		String out = convLog.get(i).data.getUserID() +  " [" + match.group() + "]: " + convLog.get(i).data.getMessage();
+	        		String out = log.get(i).data.getUserID() +  " [" + match.group() + "]: " + log.get(i).data.getMessage();
 	        		textArea.append(out + "\n");
 	        	}
 	        }
 	    	System.out.println("Window updated...");
         }
-        else textArea.append(convLog.get(0).data.getMessage() + "\n");
+        else textArea.append(log.get(0).data.getMessage() + "\n");
     }
     //USER HITS ENTER
     public ArrayList<Block> logMessage(String text, ArrayList<Block> log) throws IOException{
@@ -218,7 +215,7 @@ private int first = 0;
         String out = uid +  " [" + timeStamp + "]: " + text + "\n";
         textArea.append(out);
         
-        log.add(new Block(new Data(uid,text), log.get(convLog.size()-1).getCurrentHash(), DataEncryption.hashSHA256(log.get(convLog.size()-1).getPreviousHash() + log.get(convLog.size()-1).data + log.get(convLog.size()-1).getTimeStamp())));
+        log.add(new Block(new Data(uid,text), log.get(log.size()-1).getCurrentHash(), DataEncryption.hashSHA256(log.get(log.size()-1).getPreviousHash() + log.get(log.size()-1).data + log.get(log.size()-1).getTimeStamp())));
         
         TransferData.writeToFile(log, convName);
 
